@@ -1,3 +1,10 @@
 databaseChangeLog:
-  - includeAll:
-      path: db\changelog\changes\
+  - include:
+      file: db/changelog/changes/001-account_status.yaml
+  - include:
+      file: db/changelog/changes/002-client.yaml
+  - include:
+      file: db/changelog/changes/003-account.yaml
+  - include:
+      file: db/changelog/changes/004-insert-account-statuses.yaml
+

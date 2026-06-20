@@ -1,7 +1,13 @@
 package org.example.msaccountreservation;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "account_status")
 public class AccountStatus {
@@ -11,42 +17,8 @@ public class AccountStatus {
 
     @Column(name = "name", nullable = false, length = 30)
     @Enumerated(EnumType.STRING)
-    private StatusName name;
+    private AccountStatusEnum name;
 
     @Column(name = "description", nullable = false)
     private String description;
-
-
-    public AccountStatus() {
-    }
-
-    public AccountStatus(int id, StatusName name, String description) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public StatusName getName() {
-        return name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public void setName(StatusName name) {
-        this.name = name;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
 }

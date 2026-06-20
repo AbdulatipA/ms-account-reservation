@@ -1,13 +1,23 @@
 package org.example.msaccountreservation;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.Instant;
 import java.util.UUID;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "account")
 public class Account {
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", nullable = false)
     private UUID id;
 
@@ -25,55 +35,11 @@ public class Account {
     @Column(name = "currency_code", nullable = false, length = 30)
     private String currencyCode;
 
+    @CreationTimestamp
+    @Column(name = "create_at", nullable = false, updatable = false)
+    private Instant createAt;
 
-    public Account() {
-    }
-
-    public Account(UUID id, AccountStatus status, Client client, String accountType, String currencyCode) {
-        this.id = id;
-        this.status = status;
-        this.client = client;
-        this.accountType = accountType;
-        this.currencyCode = currencyCode;
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public AccountStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(AccountStatus status) {
-        this.status = status;
-    }
-
-    public Client getClient() {
-        return client;
-    }
-
-    public void setClient(Client client) {
-        this.client = client;
-    }
-
-    public String getAccountType() {
-        return accountType;
-    }
-
-    public void setAccountType(String accountType) {
-        this.accountType = accountType;
-    }
-
-    public String getCurrencyCode() {
-        return currencyCode;
-    }
-
-    public void setCurrencyCode(String currencyCode) {
-        this.currencyCode = currencyCode;
-    }
+    @UpdateTimestamp
+    @Column(name = "update_at", nullable = false)
+    private Instant updateAt;
 }
