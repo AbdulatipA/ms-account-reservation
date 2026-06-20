@@ -1,4 +1,6 @@
 spring:
+  liquibase:
+    change-log: classpath:db/changelog/master.yaml
   application:
     name: ms-account-reservation
   datasource:
