@@ -26,3 +26,6 @@ management:
   endpoint:
     shutdown:
       access: none
+server:
+  shutdown: graceful
+  port: 8080
