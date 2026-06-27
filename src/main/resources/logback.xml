@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- 1. АППЕНДЕР ДЛЯ ВЫВОДА В КОНСОЛЬ -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!-- Настройка шаблона (Pattern) -->
+            <!-- %d{...} - дата и время -->
+            <!-- %5p     - уровень лога (INFO, ERROR и т.д.), выровненный по ширине -->
+            <!-- %logger  - имя класса, который вызвал логгер -->
+            <!-- %m       - само сообщение -->
+            <!-- %n       - перенос строки -->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 2. ГЛОБАЛЬНЫЕ НАСТРОЙКИ ЛОГИРОВАНИЯ (Корневой уровень) -->
+    <!-- Уровень INFO означает, что мы пишем INFO, WARN, ERROR, но игнорируем DEBUG и TRACE -->
+    <root level="INFO">
+        <!-- Подключаем наш аппендер консоли -->
+        <appender-ref ref="CONSOLE" />
+    </root>
+
+</configuration>
