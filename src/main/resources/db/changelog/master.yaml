@@ -1,6 +1,10 @@
 databaseChangeLog:
-  - changeSet:
-      id: 0
-      author: system
-      changes:
-        - empty: {}
+  - include:
+      file: db/changelog/changes/001-account_status.yaml
+  - include:
+      file: db/changelog/changes/002-client.yaml
+  - include:
+      file: db/changelog/changes/003-account.yaml
+  - include:
+      file: db/changelog/changes/004-insert-account-statuses.yaml
+
