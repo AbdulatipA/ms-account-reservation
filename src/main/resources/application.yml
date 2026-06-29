@@ -18,7 +18,7 @@ spring:
         format_sql: true
 management:
   server:
-    port: 8081
+    port: ${MANAGEMENT_PORT:8081}
   endpoints:
     web:
       exposure:
@@ -28,4 +28,4 @@ management:
       access: none
 server:
   shutdown: graceful
-  port: 8080
+  port: ${SERVER_PORT:8080}
