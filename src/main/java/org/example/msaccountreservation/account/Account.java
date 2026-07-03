@@ -1,9 +1,10 @@
-package org.example.msaccountreservation;
+package org.example.msaccountreservation.account;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.example.msaccountreservation.client.Client;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 

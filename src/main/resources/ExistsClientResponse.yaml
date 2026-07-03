@@ -1,0 +1,16 @@
+ExistsClientResponse:
+  type: object
+  required:
+    - exists
+    - clientId
+    - status
+  properties:
+    exists:
+      type: boolean
+      example: true
+    clientId:
+      type: string
+      format: uuid
+      example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+    status:
+      $ref: './ClientStatus.yaml#/ClientStatus'

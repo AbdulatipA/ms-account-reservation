@@ -1,4 +1,4 @@
-package org.example.msaccountreservation;
+package org.example.msaccountreservation.client;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -14,6 +14,7 @@ import java.util.UUID;
 @Table(name = "client")
 public class Client {
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false)
     private UUID id;
 
@@ -26,10 +27,10 @@ public class Client {
     @Column(name = "client_type", nullable = false, length = 30)
     private String clientType;
 
-    @Column(name = "document_number", nullable = false, length = 30)
+    @Column(name = "document_number", nullable = false, length = 4)
     private String documentNumber;
 
-    @Column(name = "document_series", nullable = false, length = 30)
+    @Column(name = "document_series", nullable = false, length = 6)
     private String documentSeries;
 
     @Column(name = "document_type", nullable = false, length = 30)

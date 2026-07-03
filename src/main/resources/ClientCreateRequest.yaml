@@ -1,0 +1,33 @@
+ClientCreateRequest: #создание нового клиента
+  type: object
+  required:
+    - fullName
+    - citizenship
+    - clientType
+    - documentNumber
+    - documentSeries
+    - documentType
+    - mdmCode
+  properties:
+    fullName:
+      type: string
+      example: "Иван Петров Сергеевич"
+    citizenship:
+      type: string
+      example: "Российская Федерация"
+    clientType:
+      type: string
+      example: "INDIVIDUAL"
+    documentNumber:
+      type: string
+      example: "1234"
+    documentSeries:
+      type: string
+      example: "123456"
+    documentType:
+      type: string
+      example: "PASSPORT"
+    mdmCode:
+      type: integer
+      format: int64
+      example: 987654321
