@@ -6,7 +6,6 @@ import org.example.msaccountreservation.clientExceptions.ClientAlreadyExistsExce
 import org.example.msaccountreservation.clientExceptions.ClientInvalidDataException;
 import org.example.msaccountreservation.clientExceptions.ClientNotFoundException;
 
-import org.example.msaccountreservation.repository.ClientRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -89,6 +88,7 @@ public class ClientService {
         return responseClient(client);
     }
 
+
     public ClientResponse putClientById(UUID id, PutClientById putClientById) {
         Client client = clientRepository.findById(id)
                 .orElseThrow(() -> new ClientNotFoundException("Клиент с таким id не найден"));
@@ -97,6 +97,7 @@ public class ClientService {
         clientRepository.save(client);
         return responseClient(client);
     }
+
 
     public ExistsClientResponse existsClient(Long mdmCode) {
 
@@ -113,6 +114,7 @@ public class ClientService {
         }
          return existsClientResponse;
     }
+
 
     public void deleteClient(UUID clientId) {
         Client client = clientRepository.findById(clientId)
