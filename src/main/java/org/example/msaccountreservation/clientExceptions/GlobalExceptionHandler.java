@@ -2,22 +2,24 @@ package org.example.msaccountreservation.clientExceptions;
 
 import com.example.model.ErrorCode;
 import com.example.model.ResponseCode;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ClientAlreadyExistsException.class)
     public ResponseEntity<ResponseCode> handleClientAlreadyExistsException(ClientAlreadyExistsException ex) {
         ResponseCode responseCode = new ResponseCode();
-
         responseCode.setErrorCode(ErrorCode.CONFLICT);
         responseCode.setErrorDescription(ex.getMessage());
         responseCode.setStatusCode(409);
+
+        log.info("ClientAlreadyExistsException: {}", responseCode);
         return new ResponseEntity<>(responseCode, HttpStatus.CONFLICT);
     }
 
@@ -28,34 +30,18 @@ public class GlobalExceptionHandler {
         responseCode.setErrorCode(ErrorCode.NOT_FOUND);
         responseCode.setErrorDescription(ex.getMessage());
         responseCode.setStatusCode(404);
+        log.info("ClientNotFoundException: {}", responseCode);
         return new ResponseEntity<>(responseCode, HttpStatus.NOT_FOUND);
     }
 
-//    @ExceptionHandler(ClientInvalidDataException.class)
-//    public ResponseEntity<ResponseCode> handleClientInvalidDataException(ClientInvalidDataException ex) {
-//
-//        ResponseCode responseCode = new ResponseCode();
-//
-//        responseCode.setErrorCode(ErrorCode.BAD_REQUEST);
-//        responseCode.setErrorDescription(ex.getMessage());
-//        responseCode.setStatusCode(400);
-//        return new ResponseEntity<>(responseCode, HttpStatus.BAD_REQUEST);
-//    }
-
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ResponseCode> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        // Собираем понятное описание, какое именно поле нарушило правила
-        StringBuilder errorDescription = new StringBuilder("Невалидные данные");
-        ex.getBindingResult().getFieldErrors().forEach(error ->
-                errorDescription.append(error.getField()).append(" (").append(error.getDefaultMessage()).append("); ")
-        );
-
+    @ExceptionHandler(ClientInvalidDataException.class)
+    public ResponseEntity<ResponseCode> handleClientInvalidDataException(ClientInvalidDataException ex) {
         ResponseCode responseCode = new ResponseCode();
-        responseCode.setErrorCode(ErrorCode.BAD_REQUEST);
-        responseCode.setErrorDescription(errorDescription.toString());
-        responseCode.setStatusCode(400);
 
+        responseCode.setErrorCode(ErrorCode.BAD_REQUEST);
+        responseCode.setErrorDescription(ex.getMessage());
+        responseCode.setStatusCode(400);
+        log.info("ClientInvalidDataException: {}", responseCode);
         return new ResponseEntity<>(responseCode, HttpStatus.BAD_REQUEST);
     }
 }

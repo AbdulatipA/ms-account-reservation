@@ -3,6 +3,7 @@ package org.example.msaccountreservation.client;
 import com.example.model.*;
 import lombok.RequiredArgsConstructor;
 import org.example.msaccountreservation.clientExceptions.ClientAlreadyExistsException;
+import org.example.msaccountreservation.clientExceptions.ClientInvalidDataException;
 import org.example.msaccountreservation.clientExceptions.ClientNotFoundException;
 
 import org.example.msaccountreservation.repository.ClientRepository;
@@ -26,6 +27,22 @@ public class ClientService {
     public ClientResponse create(ClientCreateRequest clientCreateRequest) {
         if (clientRepository.existsByMdmCode(clientCreateRequest.getMdmCode())) {
             throw new ClientAlreadyExistsException("Клиент с таким mdmCode уже существует");
+        }
+
+        if (clientCreateRequest.getDocumentNumber() != null &&
+                clientCreateRequest.getDocumentNumber().length() != 4) {
+            throw new ClientInvalidDataException("Номер паспорта должен состоять из 4 чисел");
+        }
+
+        if (clientCreateRequest.getDocumentSeries() != null &&
+                clientCreateRequest.getDocumentSeries().length() != 6) {
+            throw new ClientInvalidDataException("Серия паспорта должен состоять из 6 чисел");
+        }
+
+        if (clientRepository.existsByDocumentNumberAndDocumentSeries(
+                clientCreateRequest.getDocumentNumber(), clientCreateRequest.getDocumentSeries()
+        )) {
+            throw new ClientAlreadyExistsException("Клиент с таким номером или серией паспорта уже существует");
         }
 
         Client client = new Client();
