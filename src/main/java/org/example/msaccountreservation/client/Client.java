@@ -27,10 +27,10 @@ public class Client {
     @Column(name = "client_type", nullable = false, length = 30)
     private String clientType;
 
-    @Column(name = "document_number", nullable = false, length = 4)
+    @Column(name = "document_number", nullable = false, length = 30)
     private String documentNumber;
 
-    @Column(name = "document_series", nullable = false, length = 6)
+    @Column(name = "document_series", nullable = false, length = 30)
     private String documentSeries;
 
     @Column(name = "document_type", nullable = false, length = 30)

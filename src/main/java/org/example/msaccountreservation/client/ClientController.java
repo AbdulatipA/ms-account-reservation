@@ -11,7 +11,7 @@ import java.util.UUID;
 
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("${api.prefix}")
 @RequiredArgsConstructor
 public class ClientController implements ClientsApi {
     private final ClientService clientService;
@@ -45,6 +45,6 @@ public class ClientController implements ClientsApi {
 
     @Override
     public ResponseEntity<ClientResponse> updateClient(UUID clientId, PutClientById putClientById) {
-        return ResponseEntity.ok(clientService.putClientById(clientId, putClientById));
+        return ResponseEntity.ok(clientService.updateClientById(clientId, putClientById));
     }
 }

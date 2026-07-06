@@ -2,15 +2,15 @@ package org.example.msaccountreservation;
 
 import com.example.model.*;
 import org.example.msaccountreservation.client.Client;
+import org.example.msaccountreservation.client.ClientMapper;
 import org.example.msaccountreservation.client.ClientService;
 import org.example.msaccountreservation.client.ClientRepository;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.AdditionalAnswers;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.mapstruct.factory.Mappers;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -23,25 +23,44 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 public class ClientServiceTest {
 
-    @Mock
     private ClientRepository clientRepository;
 
-    @InjectMocks
     private ClientService clientService;
+    private ClientMapper clientMapper;
+
+
+    @BeforeEach
+    void setUp() {
+        // Создаем мок напрямую без аннотаций
+        this.clientRepository = mock(ClientRepository.class);
+        this.clientMapper = mock(ClientMapper.class);
+
+        // Передаем его в конструктор сервиса руками
+        this.clientService = new ClientService(this.clientRepository, this.clientMapper);
+    }
 
 
     @Test
     public void create() {
+        // 1. ОБУЧАЕМ МАППЕР (Добавьте эту строку)
+        // Когда сервис вызывает маппер, маппер должен вернуть объект Client, а не null
+        Mockito.when(clientMapper.toClient(any(ClientCreateRequest.class))).thenReturn(new Client());
+
         Mockito.when(clientRepository.existsByMdmCode(any())).thenReturn(false);
         Mockito.when(clientRepository.existsByDocumentNumberAndDocumentSeries(any(), any())).thenReturn(false);
         Mockito.when(clientRepository.save(any(Client.class))).thenAnswer(AdditionalAnswers.returnsFirstArg());
 
-        ClientResponse actualRequest = clientService.create(References.requestJson());
+        // 2. ОБУЧАЕМ МАППЕР НА ВЫХОД (Добавьте эту строку!)
+        // Из сохраненного Client делаем заполненный Response, чтобы сервис не упал на .setId()
         ClientResponse expectedResponse = References.responseJson();
+        Mockito.when(clientMapper.toClientResponse(any(Client.class))).thenReturn(expectedResponse);
+
+        ClientResponse actualRequest = clientService.create(References.requestJson());
 
         Assertions.assertEquals(expectedResponse.getFullName(), actualRequest.getFullName());
         Assertions.assertEquals(expectedResponse.getDocumentNumber(), actualRequest.getDocumentNumber());
@@ -61,6 +80,13 @@ public class ClientServiceTest {
 
         Mockito.when(clientRepository.findById(any())).thenReturn(Optional.of(client));
 
+        // ОБУЧАЕМ МАППЕР (Добавьте эти строки)
+        ClientResponse stubResponse = new ClientResponse();
+        stubResponse.setFullName(client.getFullName());
+        stubResponse.setMdmCode(client.getMdmCode());
+
+        Mockito.when(clientMapper.toClientResponse(client)).thenReturn(stubResponse);
+
         ClientResponse actualResponse = clientService.getClientById(id);
 
         Assertions.assertEquals(client.getFullName(), actualResponse.getFullName());
@@ -70,7 +96,7 @@ public class ClientServiceTest {
 
 
     @Test
-    public void putClientById() {
+    public void updateClientById() {
 
         UUID id = UUID.randomUUID();
 
@@ -83,7 +109,11 @@ public class ClientServiceTest {
 
         Mockito.when(clientRepository.findById(any())).thenReturn(Optional.of(client));
 
-        clientService.putClientById(id, putClient);
+        // ОБУЧАЕМ МАППЕР (Добавьте эти строки)
+        ClientResponse stubResponse = new ClientResponse();
+        Mockito.when(clientMapper.toClientResponse(any(Client.class))).thenReturn(stubResponse);
+
+        clientService.updateClientById(id, putClient);
 
         Assertions.assertEquals(client.getFullName(), putClient.getFullName());
     }

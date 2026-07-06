@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -22,20 +23,22 @@ import java.util.UUID;
 public class ClientService {
 
     private final ClientRepository clientRepository;
+    private final ClientMapper clientMapper;
 
+    @Transactional
     public ClientResponse create(ClientCreateRequest clientCreateRequest) {
-        if (clientRepository.existsByMdmCode(clientCreateRequest.getMdmCode())) {
-            throw new ClientAlreadyExistsException("Клиент с таким mdmCode уже существует");
-        }
-
         if (clientCreateRequest.getDocumentNumber() != null &&
-                clientCreateRequest.getDocumentNumber().length() != 4) {
-            throw new ClientInvalidDataException("Номер паспорта должен состоять из 4 чисел");
+                clientCreateRequest.getDocumentNumber().length() < 4) {
+            throw new ClientInvalidDataException("Номер паспорта должен состоять не менее чем из 4 чисел");
         }
 
         if (clientCreateRequest.getDocumentSeries() != null &&
-                clientCreateRequest.getDocumentSeries().length() != 6) {
-            throw new ClientInvalidDataException("Серия паспорта должен состоять из 6 чисел");
+                clientCreateRequest.getDocumentSeries().length() < 6) {
+            throw new ClientInvalidDataException("Номер паспорта должен состоять не менее чем из 6 чисел");
+        }
+
+        if (clientRepository.existsByMdmCode(clientCreateRequest.getMdmCode())) {
+            throw new ClientAlreadyExistsException("Клиент с таким mdmCode уже существует");
         }
 
         if (clientRepository.existsByDocumentNumberAndDocumentSeries(
@@ -44,24 +47,18 @@ public class ClientService {
             throw new ClientAlreadyExistsException("Клиент с таким номером или серией паспорта уже существует");
         }
 
-        Client client = new Client();
 
-        client.setFullName(clientCreateRequest.getFullName());
-        client.setCitizenship(clientCreateRequest.getCitizenship());
-        client.setClientType(clientCreateRequest.getClientType());
-        client.setDocumentNumber(clientCreateRequest.getDocumentNumber());
-        client.setDocumentSeries(clientCreateRequest.getDocumentSeries());
-        client.setDocumentType(clientCreateRequest.getDocumentType());
-        client.setMdmCode(clientCreateRequest.getMdmCode());
+        Client client =  clientMapper.toClient(clientCreateRequest);
 
         Client saveClient = clientRepository.save(client);
-
         return responseClient(saveClient);
     }
 
 
     public ClientResponse responseClient(Client client) {
         ClientResponse clientResponse = new ClientResponse();
+
+        clientResponse = clientMapper.toClientResponse(client);
 
         clientResponse.setId(client.getId());
         clientResponse.setMdmCode(client.getMdmCode());
@@ -89,7 +86,7 @@ public class ClientService {
     }
 
 
-    public ClientResponse putClientById(UUID id, PutClientById putClientById) {
+    public ClientResponse updateClientById(UUID id, PutClientById putClientById) {
         Client client = clientRepository.findById(id)
                 .orElseThrow(() -> new ClientNotFoundException("Клиент с таким id не найден"));
 
@@ -101,18 +98,19 @@ public class ClientService {
 
     public ExistsClientResponse existsClient(Long mdmCode) {
 
-        Optional<Client> findClient = clientRepository.findByMdmCode(mdmCode);
         ExistsClientResponse existsClientResponse = new ExistsClientResponse();
+        clientRepository.findByMdmCode(mdmCode)
 
-        if(findClient.isPresent()) {
-            existsClientResponse.setExists(true);
-            existsClientResponse.setClientId(findClient.get().getId());
-            existsClientResponse.setStatus(ClientStatus.BLOCKED);
-        } else {
-            existsClientResponse.setExists(false);
-            existsClientResponse.setStatus(ClientStatus.DELETED);
-        }
-         return existsClientResponse;
+                .ifPresentOrElse(client -> {
+                    existsClientResponse.setExists(true);
+                    existsClientResponse.setClientId(client.getId());
+                    existsClientResponse.setStatus(ClientStatus.BLOCKED);
+                }, () -> {
+                    existsClientResponse.setExists(false);
+                    existsClientResponse.setStatus(ClientStatus.DELETED);
+                });
+
+        return existsClientResponse;
     }
 
 
@@ -131,23 +129,10 @@ public class ClientService {
         int pageSize = (size != null) ? size : 20;
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
 
+
         // 2. Строим динамический запрос в зависимости от переданных фильтров
-        Specification<Client> spec = (root, query, cb) -> cb.conjunction();
-
-
-        // Фильтр по lastName (поиск подстроки без учета регистра)
-        if (fullName != null && !fullName.isBlank()) {
-            spec = spec.and((root, query, cb) ->
-                    cb.like(cb.lower(root.get("fullName")), "%" + fullName.toLowerCase() + "%")
-            );
-        }
-
-        // Фильтр по mdmId (в вашей сущности это поле mdmCode)
-        if (mdmId != null) {
-            spec = spec.and((root, query, cb) ->
-                    cb.equal(root.get("mdmCode"), mdmId)
-            );
-        }
+        Specification<Client> spec = (Specification.where(ClientSpecifications.hasFullName(fullName))
+                .and(ClientSpecifications.hasMdmId(mdmId)));
 
         // 3. Делаем запрос в базу данных
         Page<Client> clientPage = clientRepository.findAll(spec, pageable);

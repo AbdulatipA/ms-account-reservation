@@ -36,12 +36,12 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: document_number
-                  type: varchar(4)
+                  type: varchar
                   constraints:
                     nullable: false
               - column:
                   name: document_series
-                  type: varchar(6)
+                  type: varchar
                   constraints:
                     nullable: false
               - column:

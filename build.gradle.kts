@@ -5,6 +5,7 @@ plugins {
     id("org.openapi.generator") version "7.23.0"
 }
 
+
 group = "org.example"
 version = "0.0.1-SNAPSHOT"
 description = "ms-account-reservation"
@@ -23,8 +24,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-liquibase")
-    implementation("org.projectlombok:lombok")
-    annotationProcessor("org.projectlombok:lombok")
+    compileOnly("org.projectlombok:lombok")
+    implementation("org.mapstruct:mapstruct:1.6.3")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-validation")
@@ -32,14 +33,11 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
-
-    // Source: https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-starter-webmvc-ui
-//    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.15")
-//    // Source: https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-starter-webmvc-ui
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
 
-//    // Source: https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-ui
-//    implementation("org.springdoc:springdoc-openapi-ui:1.8.0")
+    annotationProcessor("org.projectlombok:lombok")
+    annotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")
+    annotationProcessor("org.projectlombok:lombok-mapstruct-binding:0.2.0")
 }
 
 
@@ -73,7 +71,11 @@ tasks.compileJava {
     dependsOn(tasks.openApiGenerate)
 }
 
-
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
+
+
+
+
