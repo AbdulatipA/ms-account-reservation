@@ -1,4 +1,4 @@
-package org.example.msaccountreservation;
+package org.example.msaccountreservation.account;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

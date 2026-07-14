@@ -1,7 +1,5 @@
-package org.example.msaccountreservation.repository;
+package org.example.msaccountreservation.account;
 
-import org.example.msaccountreservation.AccountStatus;
-import org.example.msaccountreservation.AccountStatusEnum;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
