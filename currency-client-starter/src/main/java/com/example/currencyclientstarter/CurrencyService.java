@@ -13,7 +13,11 @@ public class CurrencyService {
     private final CurrencyFeignClient currencyClient;
 
     public BigDecimal getExchangeRate(String fromCurrency, String toCurrency) {
-        log.info("запуск метода getExchangeRate");
+        log.info("getExchangeRate: from {} to {}", fromCurrency, toCurrency);
+
+        if (fromCurrency.equalsIgnoreCase(toCurrency)) {
+            return BigDecimal.ONE;
+        }
 
         ExchangeRateResponse response = currencyClient.getActualRates(apiKey, fromCurrency);
 

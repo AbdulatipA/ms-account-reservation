@@ -1,12 +1,16 @@
 package org.example.msaccountreservation.client;
 
 import com.example.api.ClientsApi;
+import com.example.currencyclientstarter.CurrencyService;
 import com.example.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 
@@ -15,6 +19,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ClientController implements ClientsApi {
     private final ClientService clientService;
+    private final CurrencyService currencyService;
 
     @Override
     public ResponseEntity<ClientResponse> createClient(ClientCreateRequest clientCreateRequest) {
@@ -46,5 +51,11 @@ public class ClientController implements ClientsApi {
     @Override
     public ResponseEntity<ClientResponse> updateClient(UUID clientId, PutClientById putClientById) {
         return ResponseEntity.ok(clientService.updateClientById(clientId, putClientById));
+    }
+
+    @GetMapping("/{from}/{to}/rate")
+    public ResponseEntity<BigDecimal> getRate(@PathVariable("from") String fromCurrency, @PathVariable("to") String toCurrency) {
+        BigDecimal rate = currencyService.getExchangeRate(fromCurrency, toCurrency);
+        return ResponseEntity.ok(rate);
     }
 }
