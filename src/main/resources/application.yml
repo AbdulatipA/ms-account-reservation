@@ -22,7 +22,10 @@ management:
   endpoints:
     web:
       exposure:
-        include: "health, threaddump"
+        include:
+          - health
+          - threaddump
+          - prometheus
   endpoint:
     shutdown:
       access: none
