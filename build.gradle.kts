@@ -4,6 +4,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7"
     id("org.openapi.generator") version "7.23.0"
 }
+val springCloudVersion by extra("2025.1.2")
 
 
 group = "org.example"
@@ -32,19 +33,26 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     runtimeOnly("org.postgresql:postgresql")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
+
+    implementation(project(":currency-client-starter"))
 
     annotationProcessor("org.projectlombok:lombok")
     annotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")
     annotationProcessor("org.projectlombok:lombok-mapstruct-binding:0.2.0")
+}
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.cloud:spring-cloud-dependencies:$springCloudVersion")
+    }
 }
 
 
 openApiGenerate {
     generatorName.set("spring") // язык генерируемого кода
     inputSpec.set("$rootDir/src/main/resources/ms-upgrade-api.yaml") // путь к вашему yaml-файлу
-    outputDir.set("$buildDir/generated-sources/openapi") // директория для вывода сгенерированного кода
+//    outputDir.set("$buildDir/generated-sources/openapi") // директория для вывода сгенерированного кода
+    outputDir.set(layout.buildDirectory.dir("generated-sources/openapi"))
     apiPackage.set("com.example.api")
     invokerPackage.set("com.example.invoker")
     modelPackage.set("com.example.model")
@@ -61,10 +69,13 @@ openApiGenerate {
 sourceSets {
     main {
         java {
-            srcDir("$buildDir/generated-sources/openapi/src/main/java")
+//            srcDir("$buildDir/generated-sources/openapi/src/main/java")
+//            srcDirs(layout.buildDirectory.dir("generated-sources/openapi/src/main/java"))
+            srcDir(layout.buildDirectory.dir("generated-sources/openapi/src/main/java").get().asFile)
         }
     }
 }
+
 
 // Заставляем проект сначала генерировать код, а потом компилировать Java файлы
 tasks.compileJava {
