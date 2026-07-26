@@ -1,6 +1,7 @@
 package com.example.currencyclientstarter;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -24,6 +25,9 @@ import java.time.Duration;
 @EnableCaching
 public class CurrencyAutoConfiguration {
 
+    @Value("${app.cache.ttl-minute:30}")
+    private Duration ttlMinute;
+
     @Bean
     public CurrencyService currencyService(CurrencyProperties currencyProperties,
                                            CurrencyFeignClient feignClient,
@@ -45,9 +49,9 @@ public class CurrencyAutoConfiguration {
     @Bean
     public RedisCacheManagerBuilderCustomizer redisCacheManagerBuilderCustomizer() {
         return (builder) ->
-                builder.withCacheConfiguration("half_hour_cache",
+                builder.withCacheConfiguration("CURRENCY_CACHE",
                         RedisCacheConfiguration.defaultCacheConfig()
-                                .entryTtl(Duration.ofMinutes(30))
+                                .entryTtl(ttlMinute)
                                 .disableCachingNullValues()
                                 .serializeValuesWith(RedisSerializationContext.SerializationPair
                                         .fromSerializer(new GenericToStringSerializer<>(BigDecimal.class)))

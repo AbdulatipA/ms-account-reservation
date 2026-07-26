@@ -15,7 +15,8 @@ public class CurrencyService {
     private final CurrencyFeignClient currencyClient;
     private final MeterRegistry meterRegistry;
 
-    @Cacheable(value = "half_hour_cache", key = "#root.args")
+
+    @Cacheable(value = "CURRENCY_CACHE", key = "#root.args")
     public BigDecimal getExchangeRate(String fromCurrency, String toCurrency) {
         log.info("getExchangeRate: from {} to {}", fromCurrency, toCurrency);
 
