@@ -1,7 +1,0 @@
-ClientStatus:
-  type: string
-  enum:
-    - ACTIVE
-    - BLOCKED
-    - DELETED
-
