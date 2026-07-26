@@ -29,7 +29,7 @@ import java.util.Map;
  @Mock
  private Counter counter;
 
-
+//
  @BeforeEach
  void setUp() {
   currencyService = new CurrencyService("my-api-key", currencyClient, meterRegistry);
