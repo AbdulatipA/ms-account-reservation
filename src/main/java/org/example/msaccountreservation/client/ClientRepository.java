@@ -12,6 +12,5 @@ public interface ClientRepository extends JpaRepository<Client, UUID>, JpaSpecif
 
     boolean existsByMdmCode(Long id);
     boolean existsByDocumentNumberAndDocumentSeries(String documentNumber, String series);
-
     Optional<Client> findByMdmCode(Long mdmCode);
 }

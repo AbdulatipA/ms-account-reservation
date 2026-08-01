@@ -25,7 +25,7 @@ import java.time.Duration;
 @EnableCaching
 public class CurrencyAutoConfiguration {
 
-    @Value("${app.cache.ttl-minute:30}")
+    @Value("${app.cache.ttl-minute:30m}")
     private Duration ttlMinute;
 
     @Bean
