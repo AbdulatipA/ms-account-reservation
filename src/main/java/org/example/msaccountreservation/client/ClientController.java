@@ -20,6 +20,7 @@ import java.util.UUID;
 public class ClientController implements ClientsApi {
     private final ClientService clientService;
     private final CurrencyService currencyService;
+    private final ClientReportService clientReportService;
 
     @Override
     public ResponseEntity<ClientResponse> createClient(ClientCreateRequest clientCreateRequest) {
@@ -58,4 +59,9 @@ public class ClientController implements ClientsApi {
         BigDecimal rate = currencyService.getExchangeRate(fromCurrency, toCurrency);
         return ResponseEntity.ok(rate);
     }
+
+    @GetMapping("/clients/{clientId}/summary")
+    public ResponseEntity<ClientRateDTO> getClientRateSummary(@PathVariable("clientId") UUID clientId){
+      return ResponseEntity.ok(clientReportService.getReport(clientId));
+    };
 }

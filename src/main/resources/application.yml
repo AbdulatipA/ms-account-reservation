@@ -34,5 +34,11 @@ app:
     base-url: "https://v6.exchangerate-api.com"
     api-key: "f746aba9baf5a10cb9957495"
     enabled: true
+  async:
+    core-pool-size: 5
+    max-pool-size: 10
+    queue-capacity: 20
+    thread-name-prefix: "currency-async-"
+
 
 

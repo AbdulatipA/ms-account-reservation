@@ -4,6 +4,7 @@ ErrorCode:
     - BAD_REQUEST #400
     - NOT_FOUND #404
     - CONFLICT #409
+    - GATEWAY_TIMEOUT #504
 
 ResponseCode:
   type: object

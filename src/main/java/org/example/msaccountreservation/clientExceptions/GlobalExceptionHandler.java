@@ -44,4 +44,15 @@ public class GlobalExceptionHandler {
         log.info("ClientInvalidDataException: {}", responseCode);
         return new ResponseEntity<>(responseCode, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(ClientGatewayTimeout.class)
+    public ResponseEntity<ResponseCode> handleClientGatewayTimeoutException(ClientGatewayTimeout ex) {
+        ResponseCode responseCode = new ResponseCode();
+
+        responseCode.setErrorCode(ErrorCode.GATEWAY_TIMEOUT);
+        responseCode.setErrorDescription(ex.getMessage());
+        responseCode.setStatusCode(504);
+        log.info("ClientGatewayTimeoutException: {}", responseCode);
+        return new ResponseEntity<>(responseCode, HttpStatus.GATEWAY_TIMEOUT);
+    }
 }
