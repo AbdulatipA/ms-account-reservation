@@ -1,6 +1,7 @@
 package org.example.msaccountreservation.client;
 
 import com.example.currencyclientstarter.CurrencyService;
+import lombok.extern.slf4j.Slf4j;
 import org.example.msaccountreservation.clientExceptions.ClientGatewayTimeout;
 import org.example.msaccountreservation.clientExceptions.ClientNotFoundException;
 import org.slf4j.Logger;
@@ -14,8 +15,8 @@ import java.util.UUID;
 import java.util.concurrent.*;
 
 @Service
+@Slf4j
 public class ClientReportService {
-    private static final Logger log = LoggerFactory.getLogger(ClientReportService.class);
     private final ClientRepository clientRepository;
     private final Executor executor;
     private final CurrencyService currencyService;
@@ -28,6 +29,7 @@ public class ClientReportService {
     }
 
     public ClientRateDTO getReport(UUID clientId) {
+        log.info("Getting report for client {}", clientId);
         //Запрос в бд для получения клиента
         CompletableFuture<Client> clientFuture = CompletableFuture.supplyAsync(() -> {
            return clientRepository.findById(clientId).orElseThrow(() ->
@@ -64,23 +66,30 @@ public class ClientReportService {
                 rateEURFuture
         );
 
-        return allTasksFuture.handle((v, e) -> {
-
-            if (e != null) {
-                if (clientFuture.isCompletedExceptionally()) {
-                    clientFuture.join();
-                }
-                throw new ClientGatewayTimeout("Сервис неотвечает, попробуйте позже");
-            }
-
-            Client client = clientFuture.join();
-            ClientRateDTO clientRateDTO = new ClientRateDTO();
-
-            clientRateDTO.setClientName(client.getFullName());
-            clientRateDTO.setClientID(client.getId());
-            clientRateDTO.setRates(rateMap);
-
-            return clientRateDTO;
-        }).join();
+        return allTasksFuture.handle((v, e) ->
+            processClientRate(v, e, clientFuture, rateMap)).join();
     }
+
+   private ClientRateDTO processClientRate(
+           Object v,
+           Throwable e,
+           CompletableFuture<Client> clientFuture,
+           Map<String, BigDecimal> rateMap) {
+
+       if (e != null) {
+           if (clientFuture.isCompletedExceptionally()) {
+               clientFuture.join();
+           }
+           throw new ClientGatewayTimeout("Сервис неотвечает, попробуйте позже");
+       }
+
+       Client client = clientFuture.join();
+       ClientRateDTO clientRateDTO = new ClientRateDTO();
+
+       clientRateDTO.setClientName(client.getFullName());
+       clientRateDTO.setClientID(client.getId());
+       clientRateDTO.setRates(rateMap);
+
+       return clientRateDTO;
+   };
 }
