@@ -12,6 +12,7 @@ GetClients:
           - id
           - fullName
           - status
+          - numberOfActiveAccounts
         properties:
           id:
             type: string
@@ -22,6 +23,11 @@ GetClients:
             example: "Иван Петров Сергеевич"
           status:
             $ref: './ClientStatus.yaml#/ClientStatus'
+          numberOfActiveAccounts:
+            type: integer
+            format: int64
+            example: 5
+            description: "Количество активных счетов у клиента"
     pageable:
       type: object
       required:
