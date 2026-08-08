@@ -41,6 +41,7 @@ public class AccountService {
         return accountResponseDTO;
     }
 
+
     public AccountResponseDTO getAccount(UUID id) {
         Account account = accountRepository.findById(id).orElseThrow(() -> {
             throw new RuntimeException("аккаунт с id" + id + "не найдент");
