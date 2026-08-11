@@ -1,12 +1,8 @@
 package org.example.msaccountreservation.account;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.example.msaccountreservation.client.Client;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -36,11 +32,21 @@ public class Account {
     @Column(name = "currency_code", nullable = false, length = 30)
     private String currencyCode;
 
-    @CreationTimestamp
     @Column(name = "create_at", nullable = false, updatable = false)
     private Instant createAt;
 
-    @UpdateTimestamp
     @Column(name = "update_at", nullable = false)
     private Instant updateAt;
+
+    @PrePersist
+    protected void onCreate() {
+        Instant now = Instant.now();
+        createAt = now;
+        updateAt = now;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updateAt = Instant.now();
+    }
 }

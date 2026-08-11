@@ -2,6 +2,7 @@ package org.example.msaccountreservation.client;
 
 import com.example.model.*;
 import lombok.RequiredArgsConstructor;
+import org.example.msaccountreservation.account.*;
 import org.example.msaccountreservation.clientExceptions.ClientAlreadyExistsException;
 import org.example.msaccountreservation.clientExceptions.ClientInvalidDataException;
 import org.example.msaccountreservation.clientExceptions.ClientNotFoundException;
@@ -14,16 +15,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ClientService {
 
     private final ClientRepository clientRepository;
+    private final AccountRepository accountRepository;
     private final ClientMapper clientMapper;
+    private final AccountMapper accountMapper;
+
 
     @Transactional
     public ClientResponse create(ClientCreateRequest clientCreateRequest) {
@@ -56,24 +59,10 @@ public class ClientService {
 
 
     public ClientResponse responseClient(Client client) {
-        ClientResponse clientResponse = new ClientResponse();
-
-        clientResponse = clientMapper.toClientResponse(client);
-
-        clientResponse.setId(client.getId());
-        clientResponse.setMdmCode(client.getMdmCode());
-        clientResponse.setFullName(client.getFullName());
-        clientResponse.citizenship(client.getCitizenship());
-        clientResponse.clientType(client.getClientType());
-        clientResponse.documentNumber(client.getDocumentNumber());
-        clientResponse.documentSeries(client.getDocumentSeries());
-        clientResponse.documentType(client.getDocumentType());
-        clientResponse.mdmCode(client.getMdmCode());
-        clientResponse.setStatus(ClientStatus.BLOCKED);
+        ClientResponse clientResponse = clientMapper.toClientResponse(client);
+        clientResponse.setStatus(ClientStatus.ACTIVE);
         clientResponse.setCreatedAt(OffsetDateTime.now());
         clientResponse.setUpdatedAt(OffsetDateTime.now());
-
-        clientResponse.setHasAccounts(false);
 
         return clientResponse;
     }
@@ -82,7 +71,16 @@ public class ClientService {
     public ClientResponse getClientById(UUID id) {
         Client client = clientRepository.findById(id)
                 .orElseThrow(() -> new ClientNotFoundException("Клиент с таким id не найден"));
-        return responseClient(client);
+
+        List<Account> accounts = accountRepository.findByClient(client);
+        ClientResponse clientResponse = responseClient(client);
+        List<AccountResponseForClient> accountResponse = accounts.stream()
+                .map(accountMapper::toAccountResponseForClient)
+                .toList();
+
+        clientResponse.setHasAccounts(!accountResponse.isEmpty());
+        clientResponse.setAccounts(accountResponse);
+        return clientResponse;
     }
 
 
@@ -122,45 +120,44 @@ public class ClientService {
     }
 
 
-    public GetClients getClients(Integer page, Integer size, String fullName, Long mdmId) {
+    public GetClients getClients(Integer page, Integer size, String fullName, Long mdmCode) {
+        Integer defaultPage = 0;
+        Integer defaultSize = 20;
 
-        // 1. Задаем значения по умолчанию для пагинации, если параметры не переданы
-        int pageNumber = (page != null) ? page : 0;
-        int pageSize = (size != null) ? size : 20;
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        if (page == null || page < 0) {
+            page = defaultPage;
+        }
+
+        if (size == null || size < 0) {
+            size = defaultSize;
+        }
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Specification<Client> clientSpecification = Specification.where(
+                ClientSpecifications.hasFullName(fullName).and(ClientSpecifications.hasMdmId(mdmCode))
+        );
+
+        Page<Client> clientPage = clientRepository.findAll(clientSpecification, pageable);
+
+        GetClients getClients = new GetClients();
 
 
-        // 2. Строим динамический запрос в зависимости от переданных фильтров
-        Specification<Client> spec = (Specification.where(ClientSpecifications.hasFullName(fullName))
-                .and(ClientSpecifications.hasMdmId(mdmId)));
-
-        // 3. Делаем запрос в базу данных
-        Page<Client> clientPage = clientRepository.findAll(spec, pageable);
-
-        // 4. Маппим полученную страницу сущностей в объект ответа GetClients из OpenAPI
-        GetClients getClientsResponse = new GetClients();
-
-        // Сборка списка контента (внутренних элементов)
-        List<GetClientsContentInner> contentList = clientPage.getContent().stream()
+        List<GetClientsContentInner> getClientsPageables = clientPage.getContent().stream()
                 .map(client -> {
-                    GetClientsContentInner item = new GetClientsContentInner();
-                    item.setId(client.getId());
-                    item.setFullName(client.getFullName());
-                    // Присваиваем статус (вручную ACTIVE или берем из client, если он там есть)
-                    item.setStatus(ClientStatus.ACTIVE);
-                    return item;
-                })
-                .collect(java.util.stream.Collectors.toList());
-        getClientsResponse.setContent(contentList);
+                    GetClientsContentInner inner = new GetClientsContentInner();
+                    inner.setId(client.getId());
+                    inner.setFullName(client.getFullName());
+                    inner.setStatus(ClientStatus.ACTIVE);
 
-        // Сборка метаданных пагинации
-        GetClientsPageable responsePageable = new GetClientsPageable();
-        responsePageable.setPageNumber(clientPage.getNumber());
-        responsePageable.setPageSize(clientPage.getSize());
-        responsePageable.setTotalPages(clientPage.getTotalPages());
-        responsePageable.setTotalElements(Math.toIntExact(clientPage.getTotalElements()));
-        getClientsResponse.setPageable(responsePageable);
+                    long activeAccount = accountRepository.countByClientAndStatusName(client, AccountStatusEnum.CREATED);
+                    inner.setNumberOfActiveAccounts(activeAccount);
 
-        return getClientsResponse;
-    }
+                    return inner;
+                }).collect(Collectors.toList());
+
+        getClients.setContent(getClientsPageables);
+
+        return getClients;
+    };
 }

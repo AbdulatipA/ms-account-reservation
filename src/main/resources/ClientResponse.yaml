@@ -1,5 +1,6 @@
-ClientResponse: #ответ на создание нового клиета
+ClientResponse:
       type: object
+      description: "Ответ на создание нового клиента"
       required:
         - id
         - fullName
@@ -12,6 +13,8 @@ ClientResponse: #ответ на создание нового клиета
         - status
         - createdAt
         - updatedAt
+        - hasAccounts
+        - accounts
       properties:
         id:
           type: string
@@ -49,8 +52,38 @@ ClientResponse: #ответ на создание нового клиета
           type: string
           format: date-time
           example: "2024-01-15T10:30:00Z"
-
         hasAccounts:
           type: boolean
           default: false
           example: false
+        accounts:
+          type: array
+          description: "Список всех счетов клиента"
+          items:
+            $ref: '#/AccountResponseForClient'
+
+AccountResponseForClient:
+  type: object
+  required:
+    - accountNumber
+    - currencyCode
+    - balance
+    - status
+  properties:
+    accountNumber:
+      type: string
+      description: "номер счета"
+      example: "40817810000000001234"
+    currencyCode:
+      type: string
+      description: "валюта"
+      example: "EUR"
+    balance:
+      type: number
+      description: "балас"
+      format: double
+      example: 152000.30
+    status:
+      type: string
+      description: статус счета
+      example: "NEW"
