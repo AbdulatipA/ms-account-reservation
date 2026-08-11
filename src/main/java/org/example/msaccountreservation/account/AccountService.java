@@ -13,13 +13,12 @@ import java.util.UUID;
 
 @Service
 @Slf4j
-@Data
 @RequiredArgsConstructor
 public class AccountService {
     private final AccountRepository accountRepository;
     private final ClientRepository clientRepository;
     private final AccountStatusRepository accountStatusRepository;
-    private  final AccountMapper accountMapper;
+    private final AccountMapper accountMapper;
 
     @Transactional
     public AccountResponseDTO createAccount(AccountRequestDTO accountRequestDTO, UUID clientId) {
