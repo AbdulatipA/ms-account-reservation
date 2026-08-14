@@ -7,6 +7,8 @@ import org.example.msaccountreservation.clientExceptions.ClientAlreadyExistsExce
 import org.example.msaccountreservation.clientExceptions.ClientInvalidDataException;
 import org.example.msaccountreservation.clientExceptions.ClientNotFoundException;
 
+import org.example.msaccountreservation.events.*;
+import org.example.msaccountreservation.kafka.ClientEventProducer;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -26,6 +28,8 @@ public class ClientService {
     private final AccountRepository accountRepository;
     private final ClientMapper clientMapper;
     private final AccountMapper accountMapper;
+
+    private final ClientEventProducer clientEventProducer;
 
 
     @Transactional
@@ -54,6 +58,10 @@ public class ClientService {
         Client client =  clientMapper.toClient(clientCreateRequest);
 
         Client saveClient = clientRepository.save(client);
+        clientEventProducer.sendEvent(new ClientChangedEvent(
+                saveClient.getId(),
+                ClientTypeEvent.CREATED
+        ));
         return responseClient(saveClient);
     }
 
@@ -89,8 +97,34 @@ public class ClientService {
                 .orElseThrow(() -> new ClientNotFoundException("Клиент с таким id не найден"));
 
         client.setFullName(putClientById.getFullName());
-        clientRepository.save(client);
-        return responseClient(client);
+        Client saveClient = clientRepository.save(client);
+
+
+//        // 1. Создаем ОДИН объект события (внутри продюсера ему ОДИН РАЗ присвоится eventId и timestamp)
+//        ClientChangedEvent event = new ClientChangedEvent(
+//                saveClient.getId(),
+//                ClientTypeEvent.UPDATED
+//        );
+//        // 2. Отправляем первый раз (сообщение запишется в БД processed_events и обработается)
+//        clientEventProducer.sendEvent(event);
+//
+//        // 3. Отправляем ТОТ ЖЕ САМЫЙ объект второй раз (eventId остался прежним!)
+//        // База данных должна поймать ошибку дубликата
+//        clientEventProducer.sendEvent(event);
+
+        ClientChangedEvent event = new ClientChangedEvent(
+                saveClient.getId(),
+                ClientTypeEvent.UPDATED
+        );
+        clientEventProducer.sendEvent(event);
+
+        return responseClient(saveClient);
+
+//        clientEventProducer.sendEvent(new ClientChangedEvent(
+//                saveClient.getId(),
+//                ClientTypeEvent.UPDATED
+//        ));
+
     }
 
 
@@ -117,6 +151,11 @@ public class ClientService {
                 .orElseThrow(() -> new ClientNotFoundException("Клиент с таким id не найден"));
 
         clientRepository.delete(client);
+
+        clientEventProducer.sendEvent(new ClientChangedEvent(
+                client.getId(),
+                ClientTypeEvent.DELETE
+        ));
     }
 
 

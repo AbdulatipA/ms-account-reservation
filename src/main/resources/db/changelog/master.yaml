@@ -7,4 +7,6 @@ databaseChangeLog:
       file: db/changelog/changes/003-account.yaml
   - include:
       file: db/changelog/changes/004-insert-account-statuses.yaml
+  - include:
+      file: db/changelog/changes/005-processed_event.yaml
 

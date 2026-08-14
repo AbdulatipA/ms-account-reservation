@@ -16,6 +16,34 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: -1
+      retries: 100
+      properties:
+        enable.idempotence: true
+    consumer:
+      group-id: ms-account-reservation-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: "*"
+            use:
+              type:
+                headers: false
+            value:
+              default:
+                type: org.example.msaccountreservation.events.ClientChangedEvent
+      enable-auto-commit: false
+    listener:
+      ack-mode: manual_immediate
 management:
   server:
     port: ${MANAGEMENT_PORT:8081}
@@ -39,6 +67,16 @@ app:
     max-pool-size: 10
     queue-capacity: 20
     thread-name-prefix: "currency-async-"
+  kafka:
+    client-topic-name: "client-lifecycle-events"
+
+logging:
+  level:
+    org.springframework.kafka: DEBUG
+    org.apache.kafka.clients.consumer: INFO
+
+
+
 
 
 

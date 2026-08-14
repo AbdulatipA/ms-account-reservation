@@ -1,6 +1,5 @@
 package org.example.msaccountreservation.account;
 
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.msaccountreservation.client.Client;
