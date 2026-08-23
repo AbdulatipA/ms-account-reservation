@@ -18,16 +18,17 @@ spring:
         format_sql: true
   kafka:
     bootstrap-servers: localhost:9092
+#    по умолчанию для продюссера включил at most once
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      acks: -1
-      retries: 100
-      properties:
-        enable.idempotence: true
+      acks: 0
+#    по умолчанию для консьюмера включил at most once
     consumer:
       group-id: ms-account-reservation-group
       auto-offset-reset: earliest
+      enable-auto-commit: true
+      auto-commit-interval: 100ms
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
@@ -37,11 +38,10 @@ spring:
               packages: "*"
             use:
               type:
-                headers: false
-            value:
-              default:
-                type: org.example.msaccountreservation.events.ClientChangedEvent
-      enable-auto-commit: false
+                headers: true
+#            value:
+#              default:
+#                type: org.example.msaccountreservation.events.ClientChangedEvent
     listener:
       ack-mode: manual_immediate
 management:
