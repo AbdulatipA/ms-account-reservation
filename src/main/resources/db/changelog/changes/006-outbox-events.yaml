@@ -1,0 +1,59 @@
+databaseChangeLog:
+  - changeSet:
+      id: 006-outbox-events
+      author: Abdulatip
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: outbox_events
+      changes:
+        - createTable:
+            tableName: outbox_events
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: aggregate_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: aggregate_type
+                  type: varchar
+                  constraints:
+                    nullable: false
+              - column:
+                  name: event_type
+                  type: varchar
+                  constraints:
+                    nullable: false
+              - column:
+                  name: payload
+                  type: JSONB
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValue: now()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: processed
+                  type: boolean
+                  defaultValue: false
+                  constraints:
+                    nullable: false
+
+        - createIndex:
+            indexName: idx_outbox_events_processed
+            tableName: outbox_events
+            columns:
+              - column:
+                  name: processed

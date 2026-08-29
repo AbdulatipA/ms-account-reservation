@@ -7,13 +7,18 @@ import org.example.msaccountreservation.clientExceptions.ClientAlreadyExistsExce
 import org.example.msaccountreservation.clientExceptions.ClientInvalidDataException;
 import org.example.msaccountreservation.clientExceptions.ClientNotFoundException;
 
+import org.example.msaccountreservation.events.*;
+import org.example.msaccountreservation.outbox.OutboxEvent;
+import org.example.msaccountreservation.outbox.OutboxEventRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.ObjectMapper;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -26,6 +31,9 @@ public class ClientService {
     private final AccountRepository accountRepository;
     private final ClientMapper clientMapper;
     private final AccountMapper accountMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    private final OutboxEventRepository outboxEventRepository;
 
 
     @Transactional
@@ -50,24 +58,15 @@ public class ClientService {
             throw new ClientAlreadyExistsException("Клиент с таким номером или серией паспорта уже существует");
         }
 
-
         Client client =  clientMapper.toClient(clientCreateRequest);
-
         Client saveClient = clientRepository.save(client);
+
+        saveOutboxEvent(saveClient, ClientTypeEvent.CREATED);
         return responseClient(saveClient);
     }
 
 
-    public ClientResponse responseClient(Client client) {
-        ClientResponse clientResponse = clientMapper.toClientResponse(client);
-        clientResponse.setStatus(ClientStatus.ACTIVE);
-        clientResponse.setCreatedAt(OffsetDateTime.now());
-        clientResponse.setUpdatedAt(OffsetDateTime.now());
-
-        return clientResponse;
-    }
-
-
+    @Transactional(readOnly = true)
     public ClientResponse getClientById(UUID id) {
         Client client = clientRepository.findById(id)
                 .orElseThrow(() -> new ClientNotFoundException("Клиент с таким id не найден"));
@@ -83,14 +82,16 @@ public class ClientService {
         return clientResponse;
     }
 
-
+    @Transactional
     public ClientResponse updateClientById(UUID id, PutClientById putClientById) {
         Client client = clientRepository.findById(id)
                 .orElseThrow(() -> new ClientNotFoundException("Клиент с таким id не найден"));
 
         client.setFullName(putClientById.getFullName());
-        clientRepository.save(client);
-        return responseClient(client);
+        Client saveClient = clientRepository.save(client);
+
+        saveOutboxEvent(saveClient, ClientTypeEvent.UPDATED);
+        return responseClient(saveClient);
     }
 
 
@@ -112,11 +113,13 @@ public class ClientService {
     }
 
 
+    @Transactional
     public void deleteClient(UUID clientId) {
         Client client = clientRepository.findById(clientId)
                 .orElseThrow(() -> new ClientNotFoundException("Клиент с таким id не найден"));
 
         clientRepository.delete(client);
+        saveOutboxEvent(client, ClientTypeEvent.DELETE);
     }
 
 
@@ -160,4 +163,38 @@ public class ClientService {
 
         return getClients;
     };
+
+    // сохраняю в бд outboxEvent
+    public void saveOutboxEvent(Client client, ClientTypeEvent clientTypeEvent) {
+
+        ClientChangedEvent clientChangedEvent = new ClientChangedEvent(
+                UUID.randomUUID().toString(),
+                client.getId(),
+                clientTypeEvent,
+                Instant.now()
+        );
+
+        String payload = objectMapper.writeValueAsString(clientChangedEvent);
+
+        OutboxEvent outboxEvent = OutboxEvent.builder()
+                .aggregateId(clientChangedEvent.getClientId())
+                .aggregateType("CLIENT")
+                .eventType(clientChangedEvent.getClientType().name())
+                .payload(payload)
+                .createdAt(Instant.now())
+                .processed(false)
+                .build();
+
+        outboxEventRepository.save(outboxEvent);
+    }
+
+
+    private ClientResponse responseClient(Client client) {
+        ClientResponse clientResponse = clientMapper.toClientResponse(client);
+        clientResponse.setStatus(ClientStatus.ACTIVE);
+        clientResponse.setCreatedAt(OffsetDateTime.now());
+        clientResponse.setUpdatedAt(OffsetDateTime.now());
+
+        return clientResponse;
+    }
 }

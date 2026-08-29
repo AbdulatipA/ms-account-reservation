@@ -1,0 +1,29 @@
+databaseChangeLog:
+  - changeSet:
+      id: 005-processed_event
+      author: Abdulatip
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: processed_events
+      changes:
+        - createTable:
+            tableName: processed_events
+            columns:
+              - column:
+                  name: event_id
+                  type: varchar
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: client_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: timestamp
+                  type: timestamp
+                  constraints:
+                    nullable: false

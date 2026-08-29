@@ -16,6 +16,33 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  kafka:
+    bootstrap-servers: localhost:9092
+    client-topic-name: ${KAFKA_TOPIC_NAME}
+#    по умолчанию для продюссера включил at most once
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: ${KAFKA_ACKS}
+      transaction-id-prefix: ${KAFKA_TRANSACTIONAL_ID_CONFIG:prod-tx}
+    #    по умолчанию для консьюмера включил at most once
+    consumer:
+      group-id: ${KAFKA_GROUP_ID}
+      auto-offset-reset: ${KAFKA_AUTO_OFFSET_RESET}
+      enable-auto-commit: ${KAFKA_ENABLE_AUTO_COMMIT}
+      auto-commit-interval: ${KAFKA_AUTO_COMMIT_INTERVAL_MS}ms
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: "*"
+            use:
+              type:
+                headers: true
+    listener:
+      ack-mode: ${KAFKA_LISTENER_ACK_MODE}
 management:
   server:
     port: ${MANAGEMENT_PORT:8081}
@@ -39,6 +66,14 @@ app:
     max-pool-size: 10
     queue-capacity: 20
     thread-name-prefix: "currency-async-"
+
+logging:
+  level:
+    org.springframework.kafka: DEBUG
+    org.apache.kafka.clients.consumer: INFO
+
+
+
 
 
 
