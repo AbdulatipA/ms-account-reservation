@@ -164,18 +164,6 @@ public class ClientService {
         return getClients;
     };
 
-
-    private ClientResponse responseClient(Client client) {
-        ClientResponse clientResponse = clientMapper.toClientResponse(client);
-        clientResponse.setStatus(ClientStatus.ACTIVE);
-        clientResponse.setCreatedAt(OffsetDateTime.now());
-        clientResponse.setUpdatedAt(OffsetDateTime.now());
-
-        return clientResponse;
-    }
-
-
-
     // сохраняю в бд outboxEvent
     public void saveOutboxEvent(Client client, ClientTypeEvent clientTypeEvent) {
 
@@ -198,5 +186,15 @@ public class ClientService {
                 .build();
 
         outboxEventRepository.save(outboxEvent);
+    }
+
+
+    private ClientResponse responseClient(Client client) {
+        ClientResponse clientResponse = clientMapper.toClientResponse(client);
+        clientResponse.setStatus(ClientStatus.ACTIVE);
+        clientResponse.setCreatedAt(OffsetDateTime.now());
+        clientResponse.setUpdatedAt(OffsetDateTime.now());
+
+        return clientResponse;
     }
 }

@@ -15,7 +15,7 @@ public class ClientEventConsumer {
     private final ClientEventConsumerService clientEventConsumerService;
 
     @KafkaListener(
-            topics = "${app.kafka.client-topic-name}",
+            topics = "${spring.kafka.client-topic-name}",
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "exactlyOnceKafkaListenerContainerFactory"
     )

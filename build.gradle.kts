@@ -39,6 +39,12 @@ dependencies {
 
     implementation(project(":currency-client-starter"))
 
+    // Source: https://mvnrepository.com/artifact/net.javacrumbs.shedlock/shedlock-spring
+    implementation("net.javacrumbs.shedlock:shedlock-spring:7.9.0")
+
+    // Source: https://mvnrepository.com/artifact/net.javacrumbs.shedlock/shedlock-provider-jdbc-template
+    implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:7.9.0")
+
     annotationProcessor("org.projectlombok:lombok")
     annotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")
     annotationProcessor("org.projectlombok:lombok-mapstruct-binding:0.2.0")

@@ -11,4 +11,6 @@ databaseChangeLog:
       file: db/changelog/changes/005-processed_event.yaml
   - include:
       file: db/changelog/changes/006-outbox-events.yaml
+  - include:
+      file: db/changelog/changes/007-shedlock.yaml
 

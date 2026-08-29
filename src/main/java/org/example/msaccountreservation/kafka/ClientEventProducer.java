@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class ClientEventProducer {
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final KafkaTemplate<String, ClientChangedEvent> kafkaTemplate;
 
     private String topicName;
 
@@ -34,8 +34,8 @@ public class ClientEventProducer {
     }
 
     public ClientEventProducer(
-            @Qualifier("exactlyOnceKafkaTemplate") KafkaTemplate<String, Object> kafkaTemplate,
-            @Value("${app.kafka.client-topic-name}") String topicName) {
+            @Qualifier("exactlyOnceKafkaTemplate") KafkaTemplate<String, ClientChangedEvent> kafkaTemplate,
+            @Value("${spring.kafka.client-topic-name}") String topicName) {
         this.kafkaTemplate = kafkaTemplate;
         this.topicName = topicName;
     }

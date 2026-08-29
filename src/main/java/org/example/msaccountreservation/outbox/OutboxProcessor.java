@@ -2,6 +2,7 @@ package org.example.msaccountreservation.outbox;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.example.msaccountreservation.events.ClientChangedEvent;
 import org.example.msaccountreservation.kafka.ClientEventProducer;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -19,6 +20,7 @@ public class OutboxProcessor {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Scheduled(fixedRate = 5000)
+    @SchedulerLock(name = "outboxProcessorLock", lockAtMostFor = "4s", lockAtLeastFor = "2s")
     public void processOutboxEvens() {
         List<OutboxEvent> events = outboxEventRepository.findByProcessedFalse();
 
